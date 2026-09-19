@@ -3,10 +3,10 @@
 Static site: `index.html` + `images/` (WebP). No build step. Deploy the folder as-is.
 
 ## Before go-live (search index.html for "TODO" / "REPLACE_")
-1. **Contact form** - set `FORM_ENDPOINT` (top of the main script) to the intake flow
-   webhook in the new app.calldirector.ai account. Until then the form shows a
-   "not connected" message instead of pretending to send. Payload is JSON:
-   full_name, email, phone, project_type, budget, message, source, submitted_at.
+1. **Contact form** - DONE. Posts to the incoming webhook of flow 5952 in the exclusive-interiors
+   app.calldirector.ai account, which tags the contact and emails rexinco@yahoo.com. The webhook URL is
+   public in this repo (browser needs it); watch the inbox for junk and rotate the webhook if abused.
+   Still to do: submit a test lead from the live page and confirm the email arrives.
 2. **Chat widget** - the old PayMeGPT embed is commented out at the bottom of
    index.html. Paste the new account's embed there.
 3. **SEO tags** - copied from the live site. The live meta description was cut off

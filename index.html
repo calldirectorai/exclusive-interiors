@@ -1247,9 +1247,10 @@
   <!-- ============================================================ -->
   <script>
     // ===== FORM ENDPOINT =====
-    // TODO: replace with the webhook URL of the intake flow in the NEW app.calldirector.ai account.
-    // Until it is replaced, the form tells visitors it is not connected instead of pretending to send.
-    const FORM_ENDPOINT = 'REPLACE_WITH_NEW_ACCOUNT_FLOW_WEBHOOK_URL';
+    // Incoming webhook of flow 5952 ("Website Consultation Request -> Email") in the exclusive-interiors
+    // app.calldirector.ai account. It tags the contact and emails the lead to the client.
+    // If this is ever set back to a REPLACE_ placeholder, the form says it is not connected instead of pretending to send.
+    const FORM_ENDPOINT = 'https://app.calldirector.ai/api/webhooks/flow/5952/4d0b13d1d136eda537a4c2694f0e4352b3a83575fe5b5f4a272cbf28c410016b';
 
     // ===== GALLERY IMAGES (order matches the gallery grid) =====
     const galleryImages = [
@@ -1439,14 +1440,36 @@
       submitBtn.textContent = 'Sending...';
       setStatus('', true);
 
+      // Platform wants E.164 for phone; keep what the visitor typed in phone_display for the email.
+      const digits = (data.phone || '').replace(/\D/g, '');
+      const phoneE164 = digits.length === 10 ? '+1' + digits
+                      : (digits.length === 11 && digits[0] === '1') ? '+' + digits
+                      : data.phone;
+      // Human-readable label of a <select>, instead of its slug value.
+      const optionLabel = (id) => {
+        const el = document.getElementById(id);
+        return el && el.value ? el.selectedOptions[0].text : 'Not specified';
+      };
+
       try {
         const res = await fetch(FORM_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            ...data,
-            source: 'exclusive-interiors.com',
-            submitted_at: new Date().toISOString()
+            contactName: data.full_name,
+            contactEmail: data.email,
+            contactPhone: phoneE164,
+            channel: 'email',
+            data: {
+              full_name: data.full_name,
+              email: data.email,
+              phone_display: data.phone,
+              project_type: optionLabel('projectType'),
+              budget: optionLabel('budget'),
+              message: data.message || '(no message)',
+              source: 'exclusive-interiors.com',
+              submitted_at: new Date().toISOString()
+            }
           })
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
